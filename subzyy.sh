@@ -1,17 +1,23 @@
 #!/bin/sh
 filename=$1
-mkdir -p recon
+mkdir -p takeovers
 
 while read line; do
         
         
-        echo " finding subdomais for $line "
-       
-        ~/tools/enumsub.sh $line $line.txt &> /dev/null
+        echo "subfinder"
+        ~/go/bin/./subfinder -d $line -o $line.txt
+
+        echo "Assetfinder"
+        ~/go/bin/./assetfinder --subs-only $line | tee -a $line.txt
+        sort -u $line.txt -o $line.txt
+        
+        echo "probing subdomains "
+        cat $line.txt | ~/go/bin/./httpx -t 5000 -o $line.txt 
          
         echo "scaning with nuclei"
        
-        ~/go/bin/./nuclei -list $line.txt -t ~/nuclei-templates/masscan -o recon/$1takeover.txt
+        ~/go/bin/./nuclei -list $line.txt -t ~/takeovertemp -o takeovers/$1takeover.txt
 
 
 
